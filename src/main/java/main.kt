@@ -6,51 +6,42 @@ import retrofit2.http.Path
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.math.BigDecimal
+import kotlin.concurrent.thread
 
-data class MercadoBitCoinOrderbookResult(
-    val bids: List<List<BigDecimal>>,
-    val asks: List<List<BigDecimal>>
-)
-
-data class MercadoBitCoinTicker(
-    val high: BigDecimal,
-    val low: BigDecimal,
-    val vol: BigDecimal,
-    val last: BigDecimal,
-    val buy: BigDecimal,
-    val sell: BigDecimal,
-    val date: Long
-)
-
-data class MercadoBitCoinTickerResult(
-    val ticker: MercadoBitCoinTicker
-)
-
-data class MercadoBitcoinTradesResult(
-    val date: Int,
-    val price: BigDecimal,
-    val amount: BigDecimal,
-    val tid: Long,
-    val type: String
-)
-
-interface MercadoBitCoin {
-    @GET("/api/{coin}/orderbook")
-    fun orderbook(@Path("coin") coin: String = "BTC"): Call<MercadoBitCoinOrderbookResult>
-
-    @GET("/api/{coin}/ticker")
-    fun ticker(@Path("coin") coin: String = "BTC"): Call<MercadoBitCoinTickerResult>
-
-    @GET("/api/{coin}/trades")
-    fun trades(@Path("coin") coin: String = "BTC"): Call<List<MercadoBitcoinTradesResult>>
-}
+//https://broker.negociecoins.com.br/api/v3/{PAR}/ticker
+//https://api.blinktrade.com/api/v1/BRL/trades
 
 fun main(args: Array<String>){
+    thread() {
+        cotarMercadoBitCoin()
+    }
+
+    thread(){
+        cotarFoxbit()
+    }
+}
+
+fun cotarFoxbit(){
+    val foxbit = Retrofit.Builder()
+        .addConverterFactory(GsonConverterFactory.create())
+        .baseUrl("https://api.blinktrade.com/")
+        .build()
+    val foxbitService = foxbit.create(FoxbitApi::class.java)
+
+    val cotacoes = foxbitService.orderbook()
+    val tickers = foxbitService.tickers()
+    val trades = foxbitService.trades()
+    println(trades.execute().body())
+    println(tickers.execute().body())
+    println(cotacoes.execute().body())
+}
+
+fun cotarMercadoBitCoin(){
     val mercadoBitCoin = Retrofit.Builder()
         .addConverterFactory(GsonConverterFactory.create())
         .baseUrl("https://www.mercadobitcoin.com.br/")
         .build()
-    val mercadoBitcoinService = mercadoBitCoin.create(MercadoBitCoin::class.java)
+    val mercadoBitcoinService = mercadoBitCoin.create(MercadoBitcoinApi::class.java)
 
     val cotacoes = mercadoBitcoinService.orderbook()
     val tickers = mercadoBitcoinService.ticker()
