@@ -9,14 +9,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.math.BigDecimal
 
-
-data class Repo(val id: Long, val name: String)
 data class MercadoBitCoinOrderbook(val bids: List<List<BigDecimal>>, val asks: List<List<BigDecimal>>)
-
-interface GitHubService {
-    @GET("users/{user}/repos")
-    fun listRepos(@Path("user") user: String): Call<List<Repo>>
-}
 
 interface MercadoBitCoin {
     @GET("/api/{coin}/orderbook")
@@ -30,7 +23,7 @@ fun main(args: Array<String>){
         .build()
 
     val coinService = mercadoBitCoin.create(MercadoBitCoin::class.java)
-    val cotacoes = coinService.orderbook("BTC")
+    val cotacoes = coinService.orderbook()
 
     var result : MercadoBitCoinOrderbook? = null
 
