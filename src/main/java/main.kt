@@ -1,19 +1,37 @@
 package main
 
 import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.math.BigDecimal
 
-data class MercadoBitCoinOrderbook(val bids: List<List<BigDecimal>>, val asks: List<List<BigDecimal>>)
+data class MercadoBitCoinOrderbookResult(
+    val bids: List<List<BigDecimal>>,
+    val asks: List<List<BigDecimal>>
+)
+
+data class MercadoBitCoinTicker(
+    val high: BigDecimal,
+    val low: BigDecimal,
+    val vol: BigDecimal,
+    val last: BigDecimal,
+    val buy: BigDecimal,
+    val sell: BigDecimal,
+    val date: Long
+)
+
+data class MercadoBitCoinTickerResult(
+    val ticker: MercadoBitCoinTicker
+)
 
 interface MercadoBitCoin {
     @GET("/api/{coin}/orderbook")
-    fun orderbook(@Path("coin") coin: String = "BTC"): Call<MercadoBitCoinOrderbook>
+    fun orderbook(@Path("coin") coin: String = "BTC"): Call<MercadoBitCoinOrderbookResult>
+
+    @GET("/api/{coin}/ticker")
+    fun ticker(@Path("coin") coin: String = "BTC"): Call<MercadoBitCoinTickerResult>
 }
 
 fun main(args: Array<String>){
@@ -21,26 +39,26 @@ fun main(args: Array<String>){
         .addConverterFactory(GsonConverterFactory.create())
         .baseUrl("https://www.mercadobitcoin.com.br/")
         .build()
+    val mercadoBitcoinService = mercadoBitCoin.create(MercadoBitCoin::class.java)
 
-    val coinService = mercadoBitCoin.create(MercadoBitCoin::class.java)
-    val cotacoes = coinService.orderbook()
+    val cotacoes = mercadoBitcoinService.orderbook()
+    val tickers = mercadoBitcoinService.ticker()
 
-    var result : MercadoBitCoinOrderbook? = null
+    println(tickers.execute().body())
+    println(cotacoes.execute().body())
 
-    val ctx = cotacoes.execute().body()
-
-    /*cotacoes.enqueue(object: Callback<MercadoBitCoinOrderbook>{
-        override fun onFailure(p0: Call<MercadoBitCoinOrderbook>, p1: Throwable) {
+    //var result : MercadoBitCoinOrderbookResult? = null
+    /*cotacoes.enqueue(object: Callback<MercadoBitCoinOrderbookResult>{
+        override fun onFailure(p0: Call<MercadoBitCoinOrderbookResult>, p1: Throwable) {
             println(p1)
         }
 
-        override fun onResponse(p0: Call<MercadoBitCoinOrderbook>, response: Response<MercadoBitCoinOrderbook>) {
+        override fun onResponse(p0: Call<MercadoBitCoinOrderbookResult>, response: Response<MercadoBitCoinOrderbookResult>) {
             response?.let{
                 result = it.body()
                 println(it.body())
             }
         }
     })*/
-
     //println(result)
 }
