@@ -26,12 +26,23 @@ data class MercadoBitCoinTickerResult(
     val ticker: MercadoBitCoinTicker
 )
 
+data class MercadoBitcoinTradesResult(
+    val date: Int,
+    val price: BigDecimal,
+    val amount: BigDecimal,
+    val tid: Long,
+    val type: String
+)
+
 interface MercadoBitCoin {
     @GET("/api/{coin}/orderbook")
     fun orderbook(@Path("coin") coin: String = "BTC"): Call<MercadoBitCoinOrderbookResult>
 
     @GET("/api/{coin}/ticker")
     fun ticker(@Path("coin") coin: String = "BTC"): Call<MercadoBitCoinTickerResult>
+
+    @GET("/api/{coin}/trades")
+    fun trades(@Path("coin") coin: String = "BTC"): Call<List<MercadoBitcoinTradesResult>>
 }
 
 fun main(args: Array<String>){
@@ -43,22 +54,9 @@ fun main(args: Array<String>){
 
     val cotacoes = mercadoBitcoinService.orderbook()
     val tickers = mercadoBitcoinService.ticker()
+    val trades = mercadoBitcoinService.trades()
 
+    println(trades.execute().body())
     println(tickers.execute().body())
     println(cotacoes.execute().body())
-
-    //var result : MercadoBitCoinOrderbookResult? = null
-    /*cotacoes.enqueue(object: Callback<MercadoBitCoinOrderbookResult>{
-        override fun onFailure(p0: Call<MercadoBitCoinOrderbookResult>, p1: Throwable) {
-            println(p1)
-        }
-
-        override fun onResponse(p0: Call<MercadoBitCoinOrderbookResult>, response: Response<MercadoBitCoinOrderbookResult>) {
-            response?.let{
-                result = it.body()
-                println(it.body())
-            }
-        }
-    })*/
-    //println(result)
 }
