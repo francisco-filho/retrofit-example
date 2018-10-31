@@ -29,7 +29,7 @@ fun main(args: Array<String>){
 
     val ctx = cotacoes.execute().body()
 
-    cotacoes.enqueue(object: Callback<MercadoBitCoinOrderbook>{
+    /*cotacoes.enqueue(object: Callback<MercadoBitCoinOrderbook>{
         override fun onFailure(p0: Call<MercadoBitCoinOrderbook>, p1: Throwable) {
             println(p1)
         }
@@ -40,7 +40,7 @@ fun main(args: Array<String>){
                 println(it.body())
             }
         }
-    })
+    })*/
 
-    println(result)
+    //println(result)
 }
