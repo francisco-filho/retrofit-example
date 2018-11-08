@@ -1,4 +1,4 @@
-﻿/* DROP SCHEMA arbitragem CASCADE; */
+﻿DROP SCHEMA arbitragem CASCADE;
 
 CREATE SCHEMA arbitragem;
 
@@ -46,9 +46,13 @@ CREATE TABLE arbitragem.api_campos (
 CREATE TABLE arbitragem.taxas (
 	id serial,
 	corretora_id int REFERENCES arbitragem.corretoras,
+	moeda text DEFAULT 'BTC',
 	taxa text NOT NULL,
 	metrica text NOT NULL,
 	valor numeric(14, 9) NOT NULL,
+	limite_minimo numeric(14, 5) DEFAULT 0,
+	limite_diario numeric(14, 5),	
+	limite_mensal numeric(14, 5),	
 	ordem smallint NOT NULL DEFAULT 0,
 	adicionado_em timestamp NOT NULL DEFAULT now(),
 	PRIMARY KEY(id)
@@ -57,6 +61,7 @@ CREATE TABLE arbitragem.taxas (
 CREATE TABLE arbitragem.cotacoes (
 	id serial,
 	api_id int REFERENCES arbitragem.api,
+	campo text NOT NULL,
 	valor numeric(14, 9) NOT NULL,
 	cotado_em timestamp NOT NULL DEFAULT now(),
 	PRIMARY KEY (id)
@@ -74,25 +79,73 @@ INSERT INTO arbitragem.api VALUES (3, 3, 'Ticker', 'https://api.blinktrade.com/a
 INSERT INTO arbitragem.api VALUES (4, 4, 'Ticker', 'https://braziliex.com/api/v1/public/ticker/btc_brl', 'BTC');
 INSERT INTO arbitragem.api VALUES (5, 5, 'Ticker', 'https://www.bitcointoyou.com/api/ticker.aspx', 'BTC');
 
-INSERT INTO arbitragem.api_campos VALUES (1, 'vol', 'bigInteger', 'Volume');
-INSERT INTO arbitragem.api_campos VALUES (1, 'buy', 'bigInteger', 'Comprar');
-INSERT INTO arbitragem.api_campos VALUES (1, 'sell', 'bigInteger', 'Vender');
+INSERT INTO arbitragem.api_campos VALUES (1, 'vol', 'bigDecimal', 'Volume');
+INSERT INTO arbitragem.api_campos VALUES (1, 'buy', 'bigDecimal', 'Comprar');
+INSERT INTO arbitragem.api_campos VALUES (1, 'sell', 'bigDecimal', 'Vender');
 
-INSERT INTO arbitragem.api_campos VALUES (2, 'ticker->vol', 'bigInteger', 'Volume');
-INSERT INTO arbitragem.api_campos VALUES (2, 'ticker->buy', 'bigInteger', 'Comprar');
-INSERT INTO arbitragem.api_campos VALUES (2, 'ticker->sell', 'bigInteger', 'Vender');
+INSERT INTO arbitragem.api_campos VALUES (2, 'ticker->vol', 'bigDecimal', 'Volume');
+INSERT INTO arbitragem.api_campos VALUES (2, 'ticker->buy', 'bigDecimal', 'Comprar');
+INSERT INTO arbitragem.api_campos VALUES (2, 'ticker->sell', 'bigDecimal', 'Vender');
 
-INSERT INTO arbitragem.api_campos VALUES (3, 'vol', 'bigInteger', 'Volume');
-INSERT INTO arbitragem.api_campos VALUES (3, 'buy', 'bigInteger', 'Comprar');
-INSERT INTO arbitragem.api_campos VALUES (3, 'sell', 'bigInteger', 'Vender');
+INSERT INTO arbitragem.api_campos VALUES (3, 'vol', 'bigDecimal', 'Volume');
+INSERT INTO arbitragem.api_campos VALUES (3, 'buy', 'bigDecimal', 'Comprar');
+INSERT INTO arbitragem.api_campos VALUES (3, 'sell', 'bigDecimal', 'Vender');
 
-INSERT INTO arbitragem.api_campos VALUES (4, 'baseVolume24', 'bigInteger', 'Volume');
-INSERT INTO arbitragem.api_campos VALUES (4, 'highestBid', 'bigInteger', 'Comprar');
-INSERT INTO arbitragem.api_campos VALUES (4, 'lowestAsk', 'bigInteger', 'Vender');
+INSERT INTO arbitragem.api_campos VALUES (4, 'baseVolume24', 'bigDecimal', 'Volume');
+INSERT INTO arbitragem.api_campos VALUES (4, 'highestBid', 'bigDecimal', 'Comprar');
+INSERT INTO arbitragem.api_campos VALUES (4, 'lowestAsk', 'bigDecimal', 'Vender');
 
-INSERT INTO arbitragem.api_campos VALUES (5, 'ticker->vol', 'bigInteger', 'Volume');
-INSERT INTO arbitragem.api_campos VALUES (5, 'ticker->buy', 'bigInteger', 'Comprar');
-INSERT INTO arbitragem.api_campos VALUES (5, 'ticker->sell', 'bigInteger', 'Vender');
+INSERT INTO arbitragem.api_campos VALUES (5, 'ticker->vol', 'bigDecimal', 'Volume');
+INSERT INTO arbitragem.api_campos VALUES (5, 'ticker->buy', 'bigDecimal', 'Comprar');
+INSERT INTO arbitragem.api_campos VALUES (5, 'ticker->sell', 'bigDecimal', 'Vender');
+
+-- negocie-coins
+INSERT INTO arbitragem.taxas VALUES (1, 1, 'BTC', 'DEPOSITO', 'BRL', 0.0, 
+300, 49999, 999999, 1);
+INSERT INTO arbitragem.taxas VALUES (2, 1, 'BTC', 'DEPOSITO', 'BTC', 0.0, 
+0.5, 50, 500, 2);
+INSERT INTO arbitragem.taxas VALUES (3, 1, 'BTC', 'RETIRADA', 'BRL', 8.9, 
+300, 10000, 300000, 3);
+INSERT INTO arbitragem.taxas VALUES (4, 1, 'BTC', 'RETIRADA', '%', 0.9, 
+300, 10000, 300000, 4);
+INSERT INTO arbitragem.taxas VALUES (5, 1, 'BTC', 'RETIRADA', 'BTC', 0.0003, 
+0.5, 20, 200, 5);
+INSERT INTO arbitragem.taxas VALUES (6, 1, 'BTC', 'COMPRA_ATIVA', 'BTC', 0.4, 
+0.0005, 40, 999999, 6);
+INSERT INTO arbitragem.taxas VALUES (7, 1, 'BTC', 'COMPRA_PASSIVA', 'BTC', 0.3, 
+0.0005, 40, 999999, 7);
+INSERT INTO arbitragem.taxas VALUES (8, 1, 'BTC', 'VENDA_ATIVA', 'BTC', 0.4, 
+0.0005, 40, 999999, 8);
+INSERT INTO arbitragem.taxas VALUES (9, 1, 'BTC', 'VENDA_PASSIVA', 'BTC', 0.3, 
+0.0005, 40, 999999, 9);
+
+-- mercado bicoin
+INSERT INTO arbitragem.taxas VALUES (10, 2, 'BTC', 'DEPOSITO', 'BRL', 0.0, 
+50, 5000, 5000, 10);
+INSERT INTO arbitragem.taxas VALUES (11, 2, 'BTC', 'DEPOSITO', 'BTC', 0.0, 
+0.0005, 999999, 999999, 11);
+INSERT INTO arbitragem.taxas VALUES (12, 2, 'BTC', 'RETIRADA', 'BRL', 2.9, 
+50, 500, 999999, 12);
+INSERT INTO arbitragem.taxas VALUES (13, 2, 'BTC', 'RETIRADA', '%', 1.99, 
+50, 500, 999999, 13);
+INSERT INTO arbitragem.taxas VALUES (14, 2, 'BTC', 'COMPRA_ATIVA', 'BTC', 0.7, 
+0, 999999, 999999, 14);
+INSERT INTO arbitragem.taxas VALUES (15, 2, 'BTC', 'COMPRA_PASSIVA', 'BTC', 0.3, 
+0, 999999, 999999, 15);
+INSERT INTO arbitragem.taxas VALUES (16, 2, 'BTC', 'VENDA_ATIVA', 'BTC', 0.7, 
+0, 999999, 999999, 16);
+INSERT INTO arbitragem.taxas VALUES (17, 2, 'BTC', 'VENDA_PASSIVA', 'BTC', 0.3, 
+0, 999999, 999999, 17);
+
 
 SELECT setval('arbitragem.corretoras_id_seq', 	(SELECT COALESCE(MAX(id), 1) FROM arbitragem.corretoras));
 SELECT setval('arbitragem.api_id_seq', 			(SELECT COALESCE(MAX(id), 1) FROM arbitragem.api));
+SELECT setval('arbitragem.taxas_id_seq',		(SELECT COALESCE(MAX(id), 1) FROM arbitragem.taxas));
+
+
+SELECT DISTINCT a.id, c.nome, ac.campo, ac.tipo_dado, ac.transacao
+FROM arbitragem.corretoras c
+INNER JOIN arbitragem.api a ON a.corretora_id=c.id AND a.tipo = 'BTC'
+INNER JOIN arbitragem.api_campos ac ON ac.api_id=a.id
+WHERE a.descricao = 'Ticker' AND a.id=1
+
