@@ -6,10 +6,15 @@ import main.jdbc.SqlTemplate
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import org.glassfish.tyrus.client.ClientManager
 import org.json.JSONObject
 import java.math.BigDecimal
 import javax.sql.DataSource
 import kotlin.concurrent.thread
+import java.io.IOException
+import java.net.URI
+import javax.websocket.*
+
 
 data class Field(val name: String, val datatype: String, val type: String)
 data class Corretora(val name: String, val url: String, val fields: List<Field>, var taxas: Taxas?)
@@ -98,22 +103,61 @@ fun getByType(o: JSONObject, k: String, type: String): Any {
     }
 }
 
+class MessageToYou: MessageHandler.Whole<String>{
+    override fun onMessage(msg: String?) {
+        println(msg)
+    }
+}
+
+
 fun main(args: Array<String>){
+    val cec = ClientEndpointConfig.Builder.create().build()
+    val client = ClientManager.createClient()
+
+    client.connectToServer(object : Endpoint() {
+        override fun onOpen(session: Session, config: EndpointConfig) {
+            println("opening...")
+            val messageFrame = JSONObject()
+            val payload = JSONObject()
+
+            messageFrame.put("n", "WebAuthenticateUser")
+            payload.put("UserName", "UserName")
+            payload.put("Password", "UserName")
+
+            val s = messageFrame.toString()
+            try {
+                session.addMessageHandler(MessageToYou())
+                session.getBasicRemote().sendText(s)
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+
+        override fun onError(session: Session?, thr: Throwable?) {
+            println(thr)
+            super.onError(session, thr)
+        }
+    }, cec, URI("wss://apifoxbitprodlb.alphapoint.com/WSGateway/"))
+
+    Thread.sleep(10000)
+}
+
+fun main3(args: Array<String>){
     val db = SqlTemplate(dataSource())
 
-    val sql = "SELECT DISTINCT c.id, c.nome, a.url\n" +
+    val corretorasSql = "SELECT DISTINCT c.id, c.nome, a.url\n" +
             "FROM arbitragem.corretoras c\n" +
             "INNER JOIN arbitragem.api a ON a.corretora_id=c.id AND a.tipo = 'BTC'\n" +
             "INNER JOIN arbitragem.api_campos ac ON ac.api_id=a.id\n" +
             "WHERE a.descricao = 'Ticker' AND a.url IS NOT NULL"
 
-    val sqlCampos = "SELECT a.id, c.nome, ac.campo, ac.tipo_dado, ac.transacao\n" +
+    val camposSql = "SELECT a.id, c.nome, ac.campo, ac.tipo_dado, ac.transacao\n" +
             "FROM arbitragem.corretoras c\n" +
             "INNER JOIN arbitragem.api a ON a.corretora_id=c.id AND a.tipo = 'BTC'\n" +
             "INNER JOIN arbitragem.api_campos ac ON ac.api_id=a.id\n" +
             "WHERE a.descricao = 'Ticker' AND a.id = ?"
 
-    db.list(sql).forEach { corretora ->
+    db.list(corretorasSql).forEach { corretora ->
         thread {
             val client = OkHttpClient()
             val url = corretora["url"] as String
@@ -127,9 +171,9 @@ fun main(args: Array<String>){
             val o = JSONObject(jsonString)
             println(o)
 
-            db.list(sqlCampos, corretora["id"]).forEach { campo ->
+            db.list(camposSql, corretora["id"]).forEach { campo ->
                 val value = getFromMap(o, campo)
-                println("${campo.get("transacao")} -> ${campo.get("campo")} \t= ${value}")
+                println("${corretora.get("nome")} -> ${campo.get("transacao")} -> ${campo.get("campo")} \t= ${value}")
             }
         }
     }
