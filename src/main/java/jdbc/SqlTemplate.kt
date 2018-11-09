@@ -5,6 +5,7 @@ import javax.sql.DataSource
 import kotlin.collections.LinkedHashMap
 
 class SqlTemplate(val dataSource: DataSource) {
+
     fun first(sql: String, vararg params: Any): Optional<Map<String, Any>>{
         dataSource.getConnection().use { conn ->
             val stmt = conn.prepareStatement(sql)
@@ -21,12 +22,10 @@ class SqlTemplate(val dataSource: DataSource) {
                 for(i in 1..columnCount){
                     map[rsm.getColumnName(i)] = rs.getObject(i)
                 }
-
                 Optional.of(map)
             } else {
                 Optional.empty()
             }
-
         }
     }
 
@@ -35,7 +34,6 @@ class SqlTemplate(val dataSource: DataSource) {
 
         dataSource.getConnection().use{ conn ->
             val stmt = conn.prepareStatement(sql)
-
             for (i in 1..params.size){
                 stmt.setObject(i, params[i-1])
             }

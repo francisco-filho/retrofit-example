@@ -110,13 +110,13 @@ class MessageToYou: MessageHandler.Whole<String>{
 }
 
 
-fun main(args: Array<String>){
+fun mainWebsockets(args: Array<String>){
     val cec = ClientEndpointConfig.Builder.create().build()
     val client = ClientManager.createClient()
 
     client.connectToServer(object : Endpoint() {
         override fun onOpen(session: Session, config: EndpointConfig) {
-            println("opening...")
+            println("conectando...")
             val messageFrame = JSONObject()
             val payload = JSONObject()
 
@@ -142,7 +142,7 @@ fun main(args: Array<String>){
     Thread.sleep(10000)
 }
 
-fun main3(args: Array<String>){
+fun main(args: Array<String>){
     val db = SqlTemplate(dataSource())
 
     val corretorasSql = "SELECT DISTINCT c.id, c.nome, a.url\n" +
