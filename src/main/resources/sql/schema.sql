@@ -50,10 +50,20 @@ CREATE TABLE arbitragem.taxas (
 	taxa text NOT NULL,
 	metrica text NOT NULL,
 	valor numeric(14, 9) NOT NULL,
+	ordem smallint NOT NULL DEFAULT 0,
+	adicionado_em timestamp NOT NULL DEFAULT now(),
+	PRIMARY KEY(id)
+);
+
+CREATE TABLE arbitragem.limites (
+	id serial,
+	corretora_id int REFERENCES arbitragem.corretoras,
+	moeda text DEFAULT 'BTC',
+	limite text NOT NULL,
+	metrica text NOT NULL,
 	limite_minimo numeric(14, 5) DEFAULT 0,
 	limite_diario numeric(14, 5),	
-	limite_mensal numeric(14, 5),	
-	ordem smallint NOT NULL DEFAULT 0,
+	limite_mensal numeric(14, 5),
 	adicionado_em timestamp NOT NULL DEFAULT now(),
 	PRIMARY KEY(id)
 );
@@ -99,53 +109,52 @@ INSERT INTO arbitragem.api_campos VALUES (5, 'ticker->vol', 'bigDecimal', 'Volum
 INSERT INTO arbitragem.api_campos VALUES (5, 'ticker->buy', 'bigDecimal', 'Comprar');
 INSERT INTO arbitragem.api_campos VALUES (5, 'ticker->sell', 'bigDecimal', 'Vender');
 
+-- =========================      Taxas     =======================================
 -- negocie-coins
-INSERT INTO arbitragem.taxas VALUES (1, 1, 'BTC', 'DEPOSITO', 'BRL', 0.0, 
-300, 49999, 999999, 1);
-INSERT INTO arbitragem.taxas VALUES (2, 1, 'BTC', 'DEPOSITO', 'BTC', 0.0, 
-0.5, 50, 500, 2);
-INSERT INTO arbitragem.taxas VALUES (3, 1, 'BTC', 'RETIRADA', 'BRL', 8.9, 
-300, 10000, 300000, 3);
-INSERT INTO arbitragem.taxas VALUES (4, 1, 'BTC', 'RETIRADA', '%', 0.9, 
-300, 10000, 300000, 4);
-INSERT INTO arbitragem.taxas VALUES (5, 1, 'BTC', 'RETIRADA', 'BTC', 0.0003, 
-0.5, 20, 200, 5);
-INSERT INTO arbitragem.taxas VALUES (6, 1, 'BTC', 'COMPRA_ATIVA', 'BTC', 0.4, 
-0.0005, 40, 999999, 6);
-INSERT INTO arbitragem.taxas VALUES (7, 1, 'BTC', 'COMPRA_PASSIVA', 'BTC', 0.3, 
-0.0005, 40, 999999, 7);
-INSERT INTO arbitragem.taxas VALUES (8, 1, 'BTC', 'VENDA_ATIVA', 'BTC', 0.4, 
-0.0005, 40, 999999, 8);
-INSERT INTO arbitragem.taxas VALUES (9, 1, 'BTC', 'VENDA_PASSIVA', 'BTC', 0.3, 
-0.0005, 40, 999999, 9);
+INSERT INTO arbitragem.taxas VALUES (1, 1, 'BTC', 'DEPOSITO', 'BRL', 0.0, 1);
+INSERT INTO arbitragem.taxas VALUES (2, 1, 'BTC', 'DEPOSITO', 'BTC', 0.0, 2);
+INSERT INTO arbitragem.taxas VALUES (3, 1, 'BTC', 'RETIRADA', 'BRL', 8.9, 3);
+INSERT INTO arbitragem.taxas VALUES (4, 1, 'BTC', 'RETIRADA', '%', 0.9, 4);
+INSERT INTO arbitragem.taxas VALUES (5, 1, 'BTC', 'RETIRADA', 'BTC', 0.0003, 5);
+INSERT INTO arbitragem.taxas VALUES (6, 1, 'BTC', 'COMPRA_ATIVA', 'BTC', 0.4,6);
+INSERT INTO arbitragem.taxas VALUES (7, 1, 'BTC', 'COMPRA_PASSIVA', 'BTC', 0.3, 7);
+INSERT INTO arbitragem.taxas VALUES (8, 1, 'BTC', 'VENDA_ATIVA', 'BTC', 0.4, 8);
+INSERT INTO arbitragem.taxas VALUES (9, 1, 'BTC', 'VENDA_PASSIVA', 'BTC', 0.3, 9);
 
 -- mercado bicoin
-INSERT INTO arbitragem.taxas VALUES (10, 2, 'BTC', 'DEPOSITO', 'BRL', 0.0, 
-50, 5000, 5000, 10);
-INSERT INTO arbitragem.taxas VALUES (11, 2, 'BTC', 'DEPOSITO', 'BTC', 0.0, 
-0.0005, 999999, 999999, 11);
-INSERT INTO arbitragem.taxas VALUES (12, 2, 'BTC', 'RETIRADA', 'BRL', 2.9, 
-50, 500, 999999, 12);
-INSERT INTO arbitragem.taxas VALUES (13, 2, 'BTC', 'RETIRADA', '%', 1.99, 
-50, 500, 999999, 13);
-INSERT INTO arbitragem.taxas VALUES (14, 2, 'BTC', 'COMPRA_ATIVA', 'BTC', 0.7, 
-0, 999999, 999999, 14);
-INSERT INTO arbitragem.taxas VALUES (15, 2, 'BTC', 'COMPRA_PASSIVA', 'BTC', 0.3, 
-0, 999999, 999999, 15);
-INSERT INTO arbitragem.taxas VALUES (16, 2, 'BTC', 'VENDA_ATIVA', 'BTC', 0.7, 
-0, 999999, 999999, 16);
-INSERT INTO arbitragem.taxas VALUES (17, 2, 'BTC', 'VENDA_PASSIVA', 'BTC', 0.3, 
-0, 999999, 999999, 17);
+INSERT INTO arbitragem.taxas VALUES (10, 2, 'BTC', 'DEPOSITO', 'BRL', 0.0, 10);
+INSERT INTO arbitragem.taxas VALUES (11, 2, 'BTC', 'DEPOSITO', 'BTC', 0.0, 11);
+INSERT INTO arbitragem.taxas VALUES (12, 2, 'BTC', 'RETIRADA', 'BRL', 2.9, 12);
+INSERT INTO arbitragem.taxas VALUES (13, 2, 'BTC', 'RETIRADA', '%', 1.99,  13);
+INSERT INTO arbitragem.taxas VALUES (14, 2, 'BTC', 'COMPRA_ATIVA', 'BTC', 0.7, 14);
+INSERT INTO arbitragem.taxas VALUES (15, 2, 'BTC', 'COMPRA_PASSIVA', 'BTC', 0.3, 15);
+INSERT INTO arbitragem.taxas VALUES (16, 2, 'BTC', 'VENDA_ATIVA', 'BTC', 0.7, 16);
+INSERT INTO arbitragem.taxas VALUES (17, 2, 'BTC', 'VENDA_PASSIVA', 'BTC', 0.3, 17);
+
+-- =========================      Limites     =======================================
+-- negocie-coins
+INSERT INTO arbitragem.limites VALUES (1, 1, 'BTC', 'DEPOSITO', 'BRL', 300, 49999, 999999);
+INSERT INTO arbitragem.limites VALUES (2, 1, 'BTC', 'DEPOSITO', 'BTC', 0.5, 50, 500);
+INSERT INTO arbitragem.limites VALUES (3, 1, 'BTC', 'RETIRADA', 'BRL', 300, 10000, 300000);
+INSERT INTO arbitragem.limites VALUES (4, 1, 'BTC', 'RETIRADA', '%', 300, 10000, 300000);
+INSERT INTO arbitragem.limites VALUES (5, 1, 'BTC', 'RETIRADA', 'BTC', 0.5, 20, 200);
+INSERT INTO arbitragem.limites VALUES (6, 1, 'BTC', 'COMPRA_ATIVA', 'BTC', 0.0005, 40, 999999);
+INSERT INTO arbitragem.limites VALUES (7, 1, 'BTC', 'COMPRA_PASSIVA', 'BTC', 0.0005, 40, 999999);
+INSERT INTO arbitragem.limites VALUES (8, 1, 'BTC', 'VENDA_ATIVA', 'BTC', 0.0005, 40, 999999);
+INSERT INTO arbitragem.limites VALUES (9, 1, 'BTC', 'VENDA_PASSIVA', 'BTC', 0.0005, 40, 999999);
+
+-- mercado bicoin
+INSERT INTO arbitragem.limites VALUES (10, 2, 'BTC', 'DEPOSITO', 'BRL', 50, 5000, 5000);
+INSERT INTO arbitragem.limites VALUES (11, 2, 'BTC', 'DEPOSITO', 'BTC', 0.0005, 999999, 999999);
+INSERT INTO arbitragem.limites VALUES (12, 2, 'BTC', 'RETIRADA', 'BRL', 50, 500, 999999);
+INSERT INTO arbitragem.limites VALUES (13, 2, 'BTC', 'RETIRADA', '%', 50, 500, 999999);
+INSERT INTO arbitragem.limites VALUES (14, 2, 'BTC', 'COMPRA_ATIVA', 'BTC', 0, 999999, 999999);
+INSERT INTO arbitragem.limites VALUES (15, 2, 'BTC', 'COMPRA_PASSIVA', 'BTC', 0, 999999, 999999);
+INSERT INTO arbitragem.limites VALUES (16, 2, 'BTC', 'VENDA_ATIVA', 'BTC', 0, 999999, 999999);
+INSERT INTO arbitragem.limites VALUES (17, 2, 'BTC', 'VENDA_PASSIVA', 'BTC', 0, 999999, 999999);
 
 
 SELECT setval('arbitragem.corretoras_id_seq', 	(SELECT COALESCE(MAX(id), 1) FROM arbitragem.corretoras));
 SELECT setval('arbitragem.api_id_seq', 			(SELECT COALESCE(MAX(id), 1) FROM arbitragem.api));
 SELECT setval('arbitragem.taxas_id_seq',		(SELECT COALESCE(MAX(id), 1) FROM arbitragem.taxas));
-
-
-SELECT DISTINCT a.id, c.nome, ac.campo, ac.tipo_dado, ac.transacao
-FROM arbitragem.corretoras c
-INNER JOIN arbitragem.api a ON a.corretora_id=c.id AND a.tipo = 'BTC'
-INNER JOIN arbitragem.api_campos ac ON ac.api_id=a.id
-WHERE a.descricao = 'Ticker' AND a.id=1
-
+SELECT setval('arbitragem.limites_id_seq',		(SELECT COALESCE(MAX(id), 1) FROM arbitragem.limites));
