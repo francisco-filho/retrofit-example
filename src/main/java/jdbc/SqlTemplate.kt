@@ -6,6 +6,28 @@ import kotlin.collections.LinkedHashMap
 
 class SqlTemplate(val dataSource: DataSource) {
 
+    fun executeUpdate(sql: String, vararg params: Any?): Int {
+        dataSource.getConnection().use { conn ->
+            val stmt = conn.prepareStatement(sql)
+            for (i in 1..params.size){
+                stmt.setObject(i, params[i-1])
+            }
+            return stmt.executeUpdate()
+        }
+    }
+
+    fun executeUpdateReturnId(sql: String, vararg params: Any?): Int {
+        dataSource.getConnection().use { conn ->
+            val stmt = conn.prepareStatement(sql)
+            for (i in 1..params.size){
+                stmt.setObject(i, params[i-1])
+            }
+            val rs = stmt.executeQuery()
+            rs.next()
+            return rs.getInt(1)
+        }
+    }
+
     fun first(sql: String, vararg params: Any): Optional<Map<String, Any>>{
         dataSource.getConnection().use { conn ->
             val stmt = conn.prepareStatement(sql)

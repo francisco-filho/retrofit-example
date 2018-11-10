@@ -6,6 +6,7 @@ CREATE TABLE arbitragem.corretoras (
 	id serial,
 	nome text NOT NULL,
 	url text NOT NULL,
+	ativa boolean DEFAULT true,
 	criado_em timestamp NOT NULL DEFAULT now(),
 	PRIMARY KEY (id)
 );
@@ -19,6 +20,7 @@ CREATE TABLE arbitragem.bancos (
 	agencia_digito smallint,
 	conta int,
 	conta_digito smallint,
+	ativo boolean DEFAULT true,
 	criado_em timestamp NOT NULL DEFAULT now(),
 	PRIMARY KEY (id)
 );
@@ -30,6 +32,7 @@ CREATE TABLE arbitragem.api (
 	descricao text,
 	url text NOT NULL,
 	tipo text NOT NULL, -- BTC, BRL
+	ativa boolean DEFAULT true,
 	criado_em timestamp NOT NULL DEFAULT now(),
 	PRIMARY KEY (id)
 );
@@ -70,10 +73,17 @@ CREATE TABLE arbitragem.limites (
 
 CREATE TABLE arbitragem.cotacoes (
 	id serial,
-	api_id int REFERENCES arbitragem.api,
-	campo text NOT NULL,
-	valor numeric(14, 9) NOT NULL,
+	moeda text DEFAULT 'BTC',
 	cotado_em timestamp NOT NULL DEFAULT now(),
+	PRIMARY KEY (id)
+);
+
+CREATE TABLE arbitragem.cotacoes_itens (
+	id serial,
+	cotacao_id int REFERENCES arbitragem.cotacoes,
+	corretora_id int REFERENCES arbitragem.corretoras,
+	tipo text NOT NULL,
+	valor numeric(14, 9) NOT NULL,
 	PRIMARY KEY (id)
 );
 
@@ -158,29 +168,3 @@ SELECT setval('arbitragem.corretoras_id_seq', 	(SELECT COALESCE(MAX(id), 1) FROM
 SELECT setval('arbitragem.api_id_seq', 			(SELECT COALESCE(MAX(id), 1) FROM arbitragem.api));
 SELECT setval('arbitragem.taxas_id_seq',		(SELECT COALESCE(MAX(id), 1) FROM arbitragem.taxas));
 SELECT setval('arbitragem.limites_id_seq',		(SELECT COALESCE(MAX(id), 1) FROM arbitragem.limites));
-
-/*
-// operacao,
-
-// corretora, operacao=DEPOSITO_DINHEIRO, moeda=BRL, unidade=R$, valor=0.0
-// corretora, operacao=SAQUE, moeda=BRL, unidade=percentual, valor=0.9
-// corretora, operacao=SAQUE, moeda=BRL, unidade=R$, valor=8.9
-// corretora, operacao=COMPRA, moeda=BRL, unidade=R$, valor=0.3
-// corretora, operacao=SALDO, moeda=BTC, valor=100%
-// corretora, operacao=SALDO, moeda=BRL, valor=100%
-
-// fluxo da operacao
-
-// deposito
-// corretora, operacao=DEPOSITO_DINHEIRO, BRL, sinal=-
-// corretora, operacao=SALDO, BRL, sinal=+
-// compra
-// corretora, operacao=DEPOSITO_DINHEIRO, BRL, sinal=-
-// corretora, operacao=COMPRA, BRL, sinal=-
-// corretora, operacao=SALDO, BTC, sinal=+
-// venda
-// corretora, operacao=VENDA, BTC, sinal=-
-// corretora, operacao=VENDA, BRL, sinal=-
-// corretora, operacao=SALDO, BTC, sinal=-
-// corretora, operacao=SALDO, BRL, sinal=+
- */

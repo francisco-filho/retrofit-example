@@ -1,42 +1,30 @@
 package main
 
-import com.google.gson.JsonElement
-import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
-import com.jayway.jsonpath.spi.json.GsonJsonProvider
-import com.jayway.jsonpath.spi.json.JacksonJsonProvider
-import com.jayway.jsonpath.spi.json.JsonOrgJsonProvider
-import com.jayway.jsonpath.spi.json.JsonSmartJsonProvider
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import main.jdbc.SqlTemplate
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
-import org.glassfish.tyrus.client.ClientManager
-import org.json.JSONObject
 import java.math.BigDecimal
 import javax.sql.DataSource
 import kotlin.concurrent.thread
-import java.io.IOException
-import java.math.BigInteger
-import java.net.URI
-import javax.websocket.*
 
 fun main(args: Array<String>){
+    val maximo = 100
+    val intervalo: Long = 1000 * 60 // 1 minuto
+    var i = 0
+    while (i < 100) {
+        cotar()
+        Thread.sleep(intervalo)
+        i =+ 1
+    }
+}
+
+fun cotar(){
     val db = SqlTemplate(dataSource())
-
-    val corretorasSql = "SELECT DISTINCT c.id, c.nome, a.url\n" +
-            "FROM arbitragem.corretoras c\n" +
-            "INNER JOIN arbitragem.api a ON a.corretora_id=c.id AND a.tipo = 'BTC'\n" +
-            "INNER JOIN arbitragem.api_campos ac ON ac.api_id=a.id\n" +
-            "WHERE a.descricao = 'Ticker' AND a.url IS NOT NULL"
-
-    val camposSql = "SELECT a.id, c.nome, ac.campo, ac.tipo_dado, ac.transacao\n" +
-            "FROM arbitragem.corretoras c\n" +
-            "INNER JOIN arbitragem.api a ON a.corretora_id=c.id AND a.tipo = 'BTC'\n" +
-            "INNER JOIN arbitragem.api_campos ac ON ac.api_id=a.id\n" +
-            "WHERE a.descricao = 'Ticker' AND a.id = ?"
+    val cotacaoId = db.executeUpdateReturnId(insertCotacoesSql)
 
     db.list(corretorasSql).forEach { corretora ->
         thread {
@@ -54,6 +42,8 @@ fun main(args: Array<String>){
                     .parse(jsonString)
                     .read(campo.get("campo") as String , BigDecimal::class.java)
                 println("${corretora.get("nome")} -> ${campo.get("transacao")} -> ${campo.get("campo")} \t= ${value}")
+                db.executeUpdate(insertCotacoesItensSQL,
+                    cotacaoId, corretora["id"], campo.get("transacao"), value)
             }
         }
     }
@@ -66,3 +56,20 @@ fun dataSource(): DataSource {
     config.password = "12345678"
     return HikariDataSource(config)
 }
+
+val insertCotacoesSql = "INSERT INTO arbitragem.cotacoes (moeda) VALUES ('BTC') RETURNING id";
+val insertCotacoesItensSQL = "INSERT INTO arbitragem.cotacoes_itens(\n" +
+        "cotacao_id, corretora_id, tipo, valor)\n" +
+        "    VALUES (?, ?, ?, ?)\n"
+
+val corretorasSql = "SELECT DISTINCT c.id, c.nome, a.url\n" +
+        "FROM arbitragem.corretoras c\n" +
+        "INNER JOIN arbitragem.api a ON a.corretora_id=c.id AND a.tipo = 'BTC'\n" +
+        "INNER JOIN arbitragem.api_campos ac ON ac.api_id=a.id\n" +
+        "WHERE a.descricao = 'Ticker' AND a.url IS NOT NULL AND c.ativa"
+
+val camposSql = "SELECT a.id, c.nome, ac.campo, ac.tipo_dado, ac.transacao\n" +
+        "FROM arbitragem.corretoras c\n" +
+        "INNER JOIN arbitragem.api a ON a.corretora_id=c.id AND a.tipo = 'BTC'\n" +
+        "INNER JOIN arbitragem.api_campos ac ON ac.api_id=a.id\n" +
+        "WHERE a.descricao = 'Ticker' AND a.id = ? AND c.ativa"
