@@ -168,3 +168,38 @@ SELECT setval('arbitragem.corretoras_id_seq', 	(SELECT COALESCE(MAX(id), 1) FROM
 SELECT setval('arbitragem.api_id_seq', 			(SELECT COALESCE(MAX(id), 1) FROM arbitragem.api));
 SELECT setval('arbitragem.taxas_id_seq',		(SELECT COALESCE(MAX(id), 1) FROM arbitragem.taxas));
 SELECT setval('arbitragem.limites_id_seq',		(SELECT COALESCE(MAX(id), 1) FROM arbitragem.limites));
+
+-- Cotações
+SELECT c.id, c.nome, co.moeda, co.cotado_em
+	, SUM(CASE WHEN ci.tipo = 'Comprar' THEN ci.valor END) Comprar
+	, SUM(CASE WHEN ci.tipo = 'Vender' THEN ci.valor END) Vender
+	, SUM(CASE WHEN ci.tipo = 'Volume' THEN ci.valor END) Volume
+FROM (SELECT * FROM arbitragem.cotacoes ORDER BY id DESC LIMIT 1) co
+INNER JOIN arbitragem.cotacoes_itens ci ON ci.cotacao_id=co.id
+INNER JOIN arbitragem.corretoras c ON c.id=ci.corretora_id
+WHERE c.ativa
+GROUP BY 1, 2, 3, 4
+;
+
+-- taxas
+SELECT t.corretora_id
+	, t.moeda
+	, t.taxa
+	, t.metrica
+	, t.valor
+FROM arbitragem.taxas t
+INNER JOIN arbitragem.corretoras c ON c.id=t.corretora_id AND c.ativa
+ORDER BY t.ordem
+;
+
+-- limites
+SELECT l.corretora_id
+	, l.moeda
+	, l.limite
+	, l.metrica
+	, l.limite_minimo
+	, l.limite_diario
+	, l.limite_mensal
+FROM arbitragem.limites l
+INNER JOIN arbitragem.corretoras c ON c.id=l.corretora_id AND c.ativa
+;

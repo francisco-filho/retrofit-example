@@ -16,7 +16,7 @@ class SqlTemplate(val dataSource: DataSource) {
         }
     }
 
-    fun executeUpdateReturnId(sql: String, vararg params: Any?): Int {
+    fun insertAndReturnId(sql: String, vararg params: Any?): Int {
         dataSource.getConnection().use { conn ->
             val stmt = conn.prepareStatement(sql)
             for (i in 1..params.size){
@@ -51,8 +51,8 @@ class SqlTemplate(val dataSource: DataSource) {
         }
     }
 
-    fun list(sql: String, vararg params: Any?): List<Map<String, Any>>{
-        val result = ArrayList<Map<String, Any>>()
+    fun list(sql: String, vararg params: Any?): List<MutableMap<String, Any>>{
+        val result = ArrayList<MutableMap<String, Any>>()
 
         dataSource.getConnection().use{ conn ->
             val stmt = conn.prepareStatement(sql)
